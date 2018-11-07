@@ -1,0 +1,49 @@
+- name: Create 2 machines {{ item }}
+  ec2_instance:
+    name: "public{{ item }}"
+    key_name: "{{ key_pair }}"
+    instance_type: t2.micro
+    security_group: "{{ security_group }}"
+    tenancy: default
+    user_data: |
+            #!/bin/bash
+            yum update -y
+            yum install httpd -y
+            service httpd start
+            chkconfig httpd on
+    network:
+      assign_public_ip: true
+    image_id: ami-00ee3b59e07408c27
+  loop:
+    - 1
+    - 2
+  register: public
+
+- name: Set a fact for the IP address
+  set_fact:
+    ip_address0: "{{ public.results[0].instances[0].public_ip_address }}"
+
+- set_fact:
+    ip_address1: "{{ public.results[1].instances[0].public_ip_address }}"
+
+- name: print info
+  debug:
+    var: ip_address0
+
+- debug:
+    var: ip_address1
+
+- name: add hosts
+  add_host:
+    name: "{{ item }}"
+    group: webservers
+  loop:
+    - "{{ ip_address0 }}"
+    - "{{ ip_address1 }}"
+
+- name: Display all variables/facts known for hosts
+  debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 4
+  with_items:
+    - "{{ hostvars }}"

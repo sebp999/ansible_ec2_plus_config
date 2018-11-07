@@ -1,0 +1,9 @@
+- name: Install apache
+  yum:
+    name: httpd
+    state: latest
+
+- name: Restart service httpd, in all cases
+  service:
+    name: httpd
+    state: restarted

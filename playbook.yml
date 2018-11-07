@@ -1,0 +1,16 @@
+---
+  - name: Create a bunch of EC2s and add them to the hosts list.
+    hosts: localhost
+    connection: local
+    gather_facts: yes
+
+    roles:
+    - { role: make_ec2_and_add_ip_to_hosts, key_pair: KeyPair, security_group: sg-07f1f8b4bdd7c58a7 }
+
+  - name: Install Apache
+    hosts: webservers
+    remote_user: ec2-user
+    become: yes
+    gather_facts: no
+    roles:
+    - { role: apache }
